@@ -1,5 +1,5 @@
 ---
-title: "Time Series Analysis for Healthcare Economics"
+title: "Forecasting CMS Market Basket Using Time Series Methods"
 author: "Ayesha Parsotan"
 date: '`r Sys.Date()`'
 format:
@@ -20,32 +20,15 @@ editor:
 Slides: [slides.html](slides.html){target="_blank"} ( Go to `slides.qmd`
 to edit)
 
-::: callout-important
-**Remember:** Your goal is to make your audience understand and care
-about your findings. By crafting a compelling story, you can effectively
-communicate the value of your data science project.
-
-Carefully read this template since it has instructions and tips to
-writing!
-
-Nice report!
-:::
-
 ## Introduction
 
-The introduction should:
+The Centers for Medicare and Medicaid Services (CMS) publishes market basket indices to measure the input price inflation healthcare providers can expect. These indices summarize expected changes in cost of labor, equipment, supplies, etc. required to deliver care and serve as the standard for annual payment updates across major Medicare payment systems. Since Market Basket updates directly influence reimbursement levels, they play a central role in budgeting, actuarial modeling and financial planning throughout the healthcare industry. Organizations rely on these indices to anticipate future cost trends, evaluate financial risk and align internal expectations with federal payment policy.
 
--   Develop a storyline that captures attention and maintains interest.
+Within this broader framework, the Home Health market basket is particularly important. Under the Home Health Prospective Payment System (HH PPS), the market basket determines the annual payment update for home health agencies, affecting provider revenue, staffing capacity, and operational strategy.  
 
--   Your audience is your peers
 
--   Clearly state the problem or question you're addressing.
 
-<!-- -->
 
--   Introduce why it is relevant needs.
-
--   Provide an overview of your approach.
 
 Example of writing including citing references:
 
