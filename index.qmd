@@ -4,6 +4,7 @@ author: "Ayesha Parsotan"
 date: '`r Sys.Date()`'
 format:
   html:
+    theme: sandstone
     code-fold: true
 course: Capstone Projects in Data Science
 bibliography: references.bib # file contains bibtex for references
@@ -22,13 +23,36 @@ to edit)
 
 ## Introduction
 
-The Centers for Medicare and Medicaid Services (CMS) publishes market basket indices to measure the input price inflation healthcare providers can expect. These indices summarize expected changes in cost of labor, equipment, supplies, etc. required to deliver care and serve as the standard for annual payment updates across major Medicare payment systems. Since Market Basket updates directly influence reimbursement levels, they play a central role in budgeting, actuarial modeling and financial planning throughout the healthcare industry. Organizations rely on these indices to anticipate future cost trends, evaluate financial risk and align internal expectations with federal payment policy.
+The Centers for Medicare and Medicaid Services (CMS) publishes market
+basket indices to measure the input price inflation healthcare providers
+can expect. These indices summarize expected changes in cost of labor,
+equipment, supplies, etc. required to deliver care and serve as the
+standard for annual payment updates across major Medicare payment
+systems. Since Market Basket updates directly influence reimbursement
+levels, they play a central role in budgeting, actuarial modeling and
+financial planning throughout the healthcare industry. Organizations
+rely on these indices to anticipate future cost trends, evaluate
+financial risk and align internal expectations with federal payment
+policy.
 
-Within this broader framework, the Home Health market basket is particularly important. Under the Home Health Prospective Payment System (HH PPS), the market basket determines the annual payment update for home health agencies, affecting provider revenue, staffing capacity, and operational strategy.  
+Within this broader framework, the Home Health market basket is
+particularly important. Under the Home Health Prospective Payment System
+(HH PPS), the market basket determines the annual payment update for
+home health agencies, affecting provider revenue, staffing capacity, and
+operational strategy.
 
+The final Home Health market basket is published annually, but projected
+estimates are published quarterly and forms a long historical time
+series, making it well suited for statistical modeling. Time series
+methods, including ARIMA models have been widely applied in healthcare
+expenditure forecasting and have demonstrated strong performance in
+capturing inflationary and utilization trends (reference). Forecasting
+the Home Health market basket can support financial planning, inform
+strategic decision making and help organizations anticipate implications
+for cost of care management.
 
-
-
+This project applies time-series methods to model and forecast the CMS
+market basket index which is a variable in computing market basket.
 
 Example of writing including citing references:
 
