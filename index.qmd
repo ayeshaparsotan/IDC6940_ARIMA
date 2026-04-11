@@ -1,15 +1,17 @@
 ---
-title: "Forecasting CMS Market Basket Using Time Series Methods"
+title: "Forecasting CMS Market Basket Using Discrete Time Series Methods (ARIMA)"
 author: "Ayesha Parsotan"
 date: '`r Sys.Date()`'
 format:
   html:
-    theme: sandstone
+    theme: litera
     code-fold: true
 course: Capstone Projects in Data Science
 bibliography: references.bib # file contains bibtex for references
 #always_allow_html: true # this allows to get PDF with HTML features
 self-contained: true
+mainfont: "Arial"
+css: styles.css
 execute: 
   warning: false
   message: false
@@ -18,8 +20,7 @@ editor:
     wrap: 72
 ---
 
-Slides: [slides.html](slides.html){target="_blank"} ( Go to `slides.qmd`
-to edit)
+Presentation: [slides.html](slides.html){target="_blank"}
 
 ## Introduction
 
@@ -43,7 +44,7 @@ operational strategy.
 
 The final Home Health market basket is published annually, but projected
 estimates are published quarterly and forms a long historical time
-series, making it well suited for statistical modeling. Time series
+series, making it suitable for statistical modeling. Time series
 methods, including ARIMA models have been widely applied in healthcare
 expenditure forecasting and have demonstrated strong performance in
 capturing inflationary and utilization trends (reference). Forecasting
@@ -54,97 +55,528 @@ for cost of care management.
 This project applies time-series methods to model and forecast the CMS
 market basket index which is a variable in computing market basket.
 
-Example of writing including citing references:
-
-*This is an introduction to ..... regression, which is a non-parametric
-estimator that estimates the conditional expectation of two variables
-which is random. The goal of a kernel regression is to discover the
-non-linear relationship between two random variables. To discover the
-non-linear relationship, kernel estimator or kernel smoothing is the
-main method to estimate the curve for non-parametric statistics. In
-kernel estimator, weight function is known as kernel function
-[@efr2008]. Cite this paper [@bro2014principal]. The GEE [@wang2014].
-The PCA [@daffertshofer2004pca]*. Topology can be used in machine
-learning [@adams2021topology]
-
-For Symbolic Regression [@wang2019symbolic] *This is my work and I want
-to add more work...*
-
-Cite new paper [@su2012linear]
-
-Classification of Knee OA was studied here [@guida2021knee]
-
 ## Methods
 
--   Detail the models or algorithms used.
+A **Time Series** is a collection of observations $x_t$ made
+sequentially in time $T_0$, and can be classified into two types:
 
--   Justify your choices based on the problem and data.
+**Discrete-Time Series:** Observations are recorded at distinct, evenly
+spaced time point. Examples include: annual temperature, quarterly
+economic indicators. $T_0 = {1,2,3,...T}$
 
-*The common non-parametric regression model is*
-$Y_i = m(X_i) + \varepsilon_i$*, where* $Y_i$ *can be defined as the sum
-of the regression function value* $m(x)$ *for* $X_i$*. Here* $m(x)$ *is
-unknown and* $\varepsilon_i$ *some errors. With the help of this
-definition, we can create the estimation for local averaging i.e.*
-$m(x)$ *can be estimated with the product of* $Y_i$ *average and* $X_i$
-*is near to* $x$*. In other words, this means that we are discovering
-the line through the data points with the help of surrounding data
-points. The estimation formula is printed below [@R-base]:*
+**Continuous-Time Series:** Collection of observations that are made
+continuously over some time interval. For example: network traffic
+measured in real time. Continuous time-series models require
+differential equations and are not used in ARIMA modeling.
+
+The CMS Home Health Market Basket is observed quarterly, meaning the
+data occurs at fixed, evenly spaced intervals. Since the time series
+advances in discrete steps, all models evaluated in this study are
+formulated within a discrete time series stochastic process framework.
+
+The objective of Times Series modeling is to not only provide a model of
+the data but to forecast future values based on past-behavior. The first
+goal in time series modeling is to reduce the analysis needed to a
+simpler case: Eliminate Trend, Periodicity or Seasonality and
+Heteroskedasticity. Thereafter, we can model the remainder or residuals
+as dependent but Identically distributed.
+
+### Stationarity and Time Series Foundations
+
+A process $\{Y_t\}$ is strictly stationary if the joint distribution of
+$(Y_{t_1}, \ldots, Y_{t_n})$ is the same as the joint distribution of
+$(Y_{t_1-h}, \ldots, Y_{t_n-h})$ for all choices of time points
+$t_1,\ldots,t_n$ and all choices of time lag $h$.
 
 $$
-M_n(x) = \sum_{i=1}^{n} W_n (X_i) Y_i  \tag{1}
-$$$W_n(x)$ *is the sum of weights that belongs to all real numbers.
-Weights are positive numbers and small if* $X_i$ *is far from* $x$*.*
+f(Y_{t_1}, \ldots, Y_{t_n}) = f(Y_{t_1-h}, \ldots, Y_{t_n-h})
+$$
 
-*Another equation:*
+A process $\{Y_t\}$ is **weakly stationary** if:
+
+Mean is constant: $E(Y_t) = \mu$
+
+Variance is constant: $Var(Y_t) = \sigma^2$
+
+Autocovariance depends only on lag: $\gamma_{t,t-k} = \gamma_k$
+
+Correlation:\_\_\_\_\_
+
+Weak Stationarity is sufficient for ARMA models assume that the
+underlying statistical process is stable over time. Non-Stationary
+series must be transformed, typically through the process of
+differencing or seasonal differencing before ARIMA/SARIMA modeling.
+
+In practice, we always tests stationarity of time series data.
+
+The **Augmented Dickey-Fuller (ADF)** test is used to assess
+stationarity.
 
 $$
-y_i = \beta_0 + \beta_1 X_1 +\varepsilon_i
+H_0: \text{The series is NOT stationary} \quad\text{vs.}\quad H_1: \text{The series is stationary}
 $$
+
+If the p-value is above 0.05, we will fail to reject $H_0$ and we can
+use trend or seasonal estimation/elimination methods, transform the
+times series data set and Fit the non-stationary models.
+
+**Trend:** a trend is a long term increase or decrease in the level of a
+time-series. It reflects persistent directional movement over time.
+Trends violate stationarity because the mean of the series changes over
+time. Differencing or de-trending is used to remove trend components.
+
+A non-stationary trend implies: $E[x_t] \neq E[x_{t-k}]$
+
+Trend differencing removes this component: $\nabla x_t = x_t - x_{t-1}$
+
+```{r}
+data("uspop")
+plot(uspop)
+```
+
+**Periodicity** refers to any recurring pattern in the time series,
+regardless whether the cycle length is fixed or known. It indicates that
+the series contains repeating behavior, but the timing of the
+repetitions may vary.
+
+**Seasonality** is a specific, structured form of periodicity where the
+cycle length is known, fixed and repeats at regular intervals.
+
+$E[x_t] = E[x_{t-s}],\ \mathrm{Var}(x_t) = \mathrm{Var}(x_{t-s})$
+
+All seasonal patterns are periodic, but not all periodic patterns are
+seasonal. Seasonal differencing or SARIMA models are used to remove or
+model seasonal structure.
+
+```{r}
+data("lynx")
+plot(lynx)
+```
+
+**Heteroskedasticity** occurs when the variance of the series changes
+over time. This violates the assumption of constant variance and can
+distort model estimation. Specialized models, for example: GARCH are
+used to eliminated variance.
+
+```{r}
+data("JohnsonJohnson")
+plot(JohnsonJohnson)
+
+data("AirPassengers")
+plot(AirPassengers)
+```
+
+include snippet about IID noise and White NOISE
+
+### AR (p), MA (q), ARMA (p,q), ARIMA (p,d,q) SARIMA
+
+**Stationary Models**
+
+A **Moving Average (MA)** process of order (q), written MA(q), models
+the current values of the series using the current error term and a
+finite number of past error terms. The standard form is:
+
+$Y_t = \mu - \theta_1 e_{t-1} - \theta_2 e_{t-2} - \cdots - \theta_q e_{t-q} + e_t$
+
+An **Autoregressive (AR)** process of order (p), written AR(p),
+expresses the current values of the series as a linear combination of
+its past values.
+
+$y_t = \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p} + e_t$
+
+An **Autoregressive Moving Average (ARMA)** model is appropriate for
+stationary time series. It combines AR terms: dependence on past values
+and MA terms: dependence on past shocks.
+
+$$
+y_t
+= \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p}
++ \varepsilon_t
++ \theta_1 \varepsilon_{t-1} + \cdots + \theta_q \varepsilon_{t-q}.
+$$
+
+**Non-Stationary Models**
+
+An **Autoregressive Integrated Moving Average (ARIMA)** model is an
+extension of the ARMA model that incorporatez non-seasonal differencing
+to remove trend and achieve stationarity.
+
+$$
+\Phi(B)\,(1 - B)^{d}\, y_t \;=\; \Theta(B)\,\varepsilon_t
+$$
+
+where:
+
+p: number of AR terms
+
+d: number of differences
+
+q: number of MA terms
+
+B: backshift operator.
+
+Differencing transforms a non-stationary series into a stationary one,
+allowing ARMA structure to be applied to the differenced data. ARIMA
+models are appropriate when the series shows trend but no seasonal
+pattern.
+
+A **Seasonal Autoregressive Integrated Moving Average (SARIMA)** is an
+extension of ARIMA that incorporates seasonal components.
+
+$$
+\Phi(B^{s})\,\phi(B)\,(1 - B)^{d}\,(1 - B^{s})^{D}\, y_t
+\;=\;
+\Theta(B^{s})\,\theta(B)\,\varepsilon_t .
+$$
+
+$$
+\begin{aligned}
+\phi(B) &= \text{nonseasonal AR polynomial}, \\
+\theta(B) &= \text{nonseasonal MA polynomial}, \\
+\Phi(B^{s}) &= \text{seasonal AR polynomial}, \\
+\Theta(B^{s}) &= \text{seasonal MA polynomial}, \\
+(1 - B)^{d} &= \text{nonseasonal differencing operator}, \\
+(1 - B^{s})^{D} &= \text{seasonal differencing operator}
+\end{aligned}
+$$
+
+It is written as:
+
+SARIMA (p,d,q)(P,D,Q)s
+
+where:
+
+(p,d,q): non-seasonal ARIMA orders
+
+(P,D,Q) seasonal ARIMA orders
+
+s: seasonal period
+
+### Model Specification
+
+There are three main steps in the process of finding the appropriate
+model for a time-series: model identification, model fitting and model
+diagnostics.
+
+The **Autocorrelation Function (ACF)** measures the correlation between
+$x_t$ and its lagged values $x_t-{_k}$ :
+
+$\rho_k = \mathrm{Corr}(x_t, x_{t-k})$
+
+A sharp cutoff after lag q suggests an MA (q) component. A gradual,
+exponential decay suggests an AR or ARMA structure. Seasonal spikes at
+multiples of the seasonal period s indicate seasonal MA terms.
+
+The **Partial Autocorrelation Function (PACF)** measures the correlation
+between $x_t$ and $x_t-{_k}$ after removing the effects of intermediate
+lags:
+
+$\phi_{kk} = \mathrm{Corr}(x_t, x_{t-k} \mid x_{t-1}, \ldots, x_{t-k+1})$
+
+A sharp cutoff after lag p suggests an AR(p) component. A gradual decay
+suggests an MA or ARMA structure. Seasonal PACF spikes at lag s indicate
+seasonal AR terms. A PACF is especially useful for identifying
+autoregressive behavior.
+
+The **Extended Autocorrelation Function (EACF)** provides a systematic
+way to identify ARMA (p,q) orders when ACF and PACF patterns are
+ambiguous. The EACF constructs a grid where Rows = AR orders p, Columns
+= MA orders q. Each cell is marked as: "o" (model is plausible), "x"
+(model is not plausible). The grid is scanned for the first clean
+triangle of "o", and the top left corner of the triangle gives ARMA(p,q)
+model. The EACF is especially valuable when ACF and PACF do not show
+clear cutoffs and the series has mixed AR and MA behavior.
+
+```{r}
+#Simulations
+ma1.1.s=arima.sim(list(order=c(0,0,1),ma=-0.9),100)
+ma2.1.s=arima.sim(list(order=c(0,0,2),ma=c(-1,0.6)),100)
+ar1.1.s=arima.sim(list(order=c(1,0,0),ar=0.9),100)
+ar2.1.s=arima.sim(list(order=c(2,0,0),ar=c(1.5,-0.75)),100)
+arma1.1.s=arima.sim(list(order=c(1,0,1),ar=0.6,ma=-0.3),100)
+
+library(TSA)
+par(mfrow = c(3, 3), mar = c(3, 3, 2, 1))
+acf(ma1.1.s, main = "MA(1)")
+acf(ma2.1.s, main = "MA(2)")
+acf(ar1.1.s, main = "AR(1)")
+pacf(ar1.1.s, main = "PACF AR(1)")
+acf(ar2.1.s, main = "AR(2)")
+pacf(ar2.1.s, main = "PACF AR(2)")
+
+
+eacf(arma1.1.s)
+```
+
+After candidate models are manually identified, they are compared using
+the **Corrected Akaike Information Criterion (AICc):**
+
+$$
+AIC_c = AIC + \frac{2k(k+1)}{n - k - 1}
+$$
+
+where:
+
+$$
+AIC = -2\log(L) + 2k
+$$
+
+$L$ is the maximized likelihood,\
+$k$ is the number of estimated parameters, and\
+$n$ is the sample size.
+
+AICc adjusts for small sample sized and prevents overfitting. A lower
+AICc equates to a better models, differences greater than 2 indicate
+meaningful improvement and the most adequate model is selected.
+
+In addition to manual identification using ACF, PACF, EACF, this study
+uses **auto.arima()** function from the *forecast* package to support
+model selection. The auto.arima() function automatically determines,
+p,d,q and seasonal orders. it uses unit root tests such as ADF and KPSS
+to choose differencing. It searches across candidate ARIMA/SARIMA models
+and selects the models with the lowest AICc. This function provides an
+objective benchmark, confirms or refines manually identified models and
+ensures the final model is optimal under AICc.
+
+### Parameter Estimation
+
+Once the model orders (p,d,q) have been identified, the next step is to
+estimate the parameters of the autoregressive (AR) , moving average
+(MA), and combined ARMA models. Parameter estimation determines the
+values of the AR co-effecient $\phi_i$ , the MA co-efficient $\theta_i$
+and the innovation variance $\sigma^2$ . Different estimation methods
+apply depending on the model class.
+
+1.  *Yule-Walker Estimation \| (AR)* : relate the AR coefficients to the
+    autocovariance function.
+
+    $$
+    \gamma_k = \phi_1 \gamma_{k-1} + \cdots + \phi_p \gamma_{k-p}, 
+    \qquad k = 1,\ldots,p.
+    $$
+
+2.  *Burg Method \| (AR)* : estimates AR parameters by minimizing
+    forward and backward prediction errors while enforcing stability.
+
+3.  *Conditional Sum of Squares (CSS*) \| *(AR, MA, ARMA)* : estimates
+    AR and MA parameters by minimizing the sum of squared residuals. It
+    is useful for initial parameters but less efficient than MLE
+
+    $$
+        \sum_{t = p+1}^{T} \varepsilon_t^2
+    $$
+
+4.  *Maximum Likelihood Estimation (MLE) \| (AR)* : maximizes the
+    Gaussian likelihood, yielding efficient and asymptotically normal
+    estimates. It is the preferred method for MA models because it
+    accounts for the dependence on unobserved errors. This is required
+    for the AICc model comparison and the model must pass the normality
+    assumption for this estimation.
+
+    $$
+    L(\theta \mid y_1,\ldots,y_T),
+    $$
+
+5.  *Innovations Algorithm \| (MA)* : recursively computes optimal
+    linear predictors and innovation variances, allowing estimation of
+    MA parameters. It is efficient for pure MA models and handles
+    missing data well.
+
+6.  *Hannan-Rissanen Method \| (MA, ARMA)* : provides initial estimates
+    for MA parameters, fits a higher order AR model to obtain
+    pre-liminary residuals. This method regresses $Y_t$ on lagged values
+    and estimated residuals and uses these as starting values for MLE.
+    This method is widely used for ARMA models.
+
+    |  |  |  |
+    |----|----|----|
+    | **Model Type** | **Estimation Methods** | **Notes** |
+    | AR (p) | Yule-Walker, Burg, CSS, MLE | Yule-Walker/Burg for initial estimates; MLE for refinement |
+    | MA (q) | Innovations, Hannan-Rissanen, CSS, MLE | MA requires numerical methods; Hannan-Rissanen gives good starting values |
+    | ARMA (p,q) | Hannan-Rissanen, CSS, MLE | Hannan-Risannen and MLE are standard |
+
+    : *Summary of Parameter Estimation Methods*
+
+**Overfitting and Parameter Redundancy**
+
+**Principle of Model Selection: Keep it Simple**
+
+### Model Estimation
+
+### Model Diagnostics
+
+Model diagnostics focus on assessing how well a model fits the observed
+data and if the fit is inadequate, identifying suitable modifications.
+The main objective is to evaluate the adequacy of the selected model.
+After fitting the time series model, diagnostic checks on the residuals
+should be performed to evaluate the model's fit. Residuals should behave
+like white noise and should exhibit no autocorrelation, constant
+variance, zero mean, approximate normality and no remaining seasonal
+structure.
+
+**Statistical Inference for Model Coefficients**
+
+Each estimated parameter is evaluated for statistical significance. For
+a generic coefficient $\beta$, the hypothesis test is:
+
+$$
+H_0:\ \beta = 0 \quad\text{(coefficient is not significant)}
+$$
+
+$$
+H_1:\ \beta \neq 0 \quad\text{(coefficient is significant)}
+$$
+
+the test statistic is:
+
+$$
+z = \frac{\hat{\beta}}{SE(\hat{\beta})}
+$$
+
+and the corresponding p-value determines whether the coefficient is
+significant. If the p-value is less than 0.05, we reject $H_0$ and the
+coefficient is significant. Significant testing helps to identify
+parameter redundancy and prevents overfitting by ensuring that only
+meaningful terms are retained.
+
+**Standardized Residuals:**
+
+$$
+e_t^{*} = \frac{\hat{e}_t}{\hat{\sigma}}
+$$
+
+are examined to assess whether the model errors exhibit: zero mean,
+constant variance, no visible patterns, no remaining seasonality. A well
+fitted model produces residuals that fluctuate randomly around zero with
+no systematic structure.
+
+**Normality Assessment:**
+
+Approximate normality improves the reliability of forecast intervals.
+Normality was evaluated using Normal Q-Q plot, Shapiro-Wilk test and a
+histogram of standardized residuals. Extreme skewness or heavy tails may
+indicate the need for further transformation or alternative modeling.
+
+**Residual ACF and PACF:**
+
+The residual ACF was examined to detect remaining serial dependence.
+Significant spikes would indicate that the model failed to capture all
+AR or MA structure. For an adequate model, all residual autocorrelations
+lies within the 95% CI bounds, no seasonal spikes occur at lag and there
+is no slow decay or cyclical pattern.
+
+The residual PACF of the residuals are also inspected. Significant
+spikes in the PACF suggest remaining autoregressive behavior. A well
+specified model should show no significant partial autocorrelations and
+no seasonal partial autocorrelations.
+
+Together, the residual ACF and PACF confirm whether the model has
+removed all linear dependence.
+
+**Ljung-Box Test:**
+
+The Ljung-Box Test formally evaluates whether the residuals are
+uncorrelated:
+
+$$
+\begin{aligned}
+H_0:\ &\text{Residuals are white noise} \\
+H_1:\ &\text{Residuals are not white noise}
+\end{aligned}
+$$
+
+A large p-value greater than 0.05 indicates failure to reject $H_0$
+supporting the adequacy of the model.
+
+### Forecasting
 
 ## Analysis and Results
 
-### Data Exploration and Visualization
-
--   Describe your data sources and collection process.
-
--   Present initial findings and insights through visualizations.
-
--   Highlight unexpected patterns or anomalies.
-
-A study was conducted to determine how...
+### Data Preparation and Exploration
 
 ```{r, warning=FALSE, echo=T, message=FALSE}
-# loading packages 
 library(tidyverse)
 library(knitr)
 library(ggthemes)
 library(ggrepel)
 library(dslabs)
+library(readr)
+library(dplyr)
+library(zoo)
+library(tseries)
+library(TSA)
+
+#install.packages("forecast")
+library(forecast)
+
+setwd("C:/Users/ayesh/OneDrive/Desktop/MS Data Science/IDC6940 Projects in Data Science/IDC6940_ARIMA")
+
 ```
 
-```{python}
+```{r}
+# Import Data Set
+Data_Import <- read.csv("C:/Users/ayesh/OneDrive/Desktop/MS Data Science/IDC6940 Projects in Data Science/IDC6940_ARIMA/2025Q3 CMS HH MBI.csv")
+
+
+# Remove N/A and Blank Values
+Data <- Data_Import %>%
+  filter(
+    !is.na(`HH.Index.Levels`),          
+    `HH.Index.Levels` != ""           
+  )
+
+# Convert HH Index Levels to Numeric
+Data <- Data %>%
+  mutate(`HH.Index.Levels` = as.numeric(`HH.Index.Levels`))
+
+# Rename Headers
+
+Data <- Data %>%
+  rename(
+    Date = `Market.Basket`,
+    Index = `HH.Index.Levels`
+  )
+
+# Convert Date to Quarterly Format
+Data <- Data %>%
+  mutate(`Date` = as.yearqtr(Date, format = "%Y Q%q"))
+
+# Sort Chronologically 
+Data <- Data %>%
+  arrange(`Date`)
+
+# Convert to Time Series
+TS_Data <- ts(Data$`Index`,
+              start = c(2010,1),
+              frequency = 4)
 
 ```
+
+### Preliminary Analysis
 
 ```{r, warning=FALSE, echo=TRUE}
-# Load Data
-kable(head(murders))
 
-ggplot1 = murders %>% ggplot(mapping = aes(x=population/10^6, y=total)) 
+data(TS_Data)
+head(TS_Data)
+summary (TS_Data)
 
-  ggplot1 + geom_point(aes(col=region), size = 4) +
-  geom_text_repel(aes(label=abb)) +
-  scale_x_log10() +
-  scale_y_log10() +
-  geom_smooth(formula = "y~x", method=lm,se = F)+
-  xlab("Populations in millions (log10 scale)") + 
-  ylab("Total number of murders (log10 scale)") +
-  ggtitle("US Gun Murders in 2010") +
-  scale_color_discrete(name = "Region")+
-      theme_bw()
-  
-
+plot.ts(TS_Data, main = "CMS Home Health Market Basket Index 2010-2025")
+qqnorm(TS_Data)
+qqline(TS_Data, col= "red")
+shapiro.test(TS_Data)
 ```
+
+### Stationarity Test and Model Specification
+
+```{r}
+adf.test(TS_Data)
+acf(as.numeric(TS_Data))
+pacf(as.numeric(TS_Data))
+eacf(as.numeric(TS_Data))
+auto.arima(TS_Data)
+```
+
+Candidate Models
 
 ### Modeling and Results
 
