@@ -389,7 +389,7 @@ apply depending on the model class.
     This method is widely used for ARMA models.
 
     |  |  |  |
-    |----|----|----|
+    |------------------------|------------------------|------------------------|
     | **Model Type** | **Estimation Methods** | **Notes** |
     | AR (p) | Yule-Walker, Burg, CSS, MLE | Yule-Walker/Burg for initial estimates; MLE for refinement |
     | MA (q) | Innovations, Hannan-Rissanen, CSS, MLE | MA requires numerical methods; Hannan-Rissanen gives good starting values |
