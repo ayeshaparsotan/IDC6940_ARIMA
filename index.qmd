@@ -27,61 +27,86 @@ Presentation: [slides.html](slides.html){target="_blank"}
 The Centers for Medicare and Medicaid Services (CMS) publishes market
 basket indices to measure the input price inflation healthcare providers
 can expect. These indices summarize expected changes in cost of labor,
-equipment, supplies, etc. required to deliver care and serve as the
+equipment, supplies, etc. required to deliver care and they stand as the
 standard for annual payment updates across major Medicare payment
 systems. Since Market Basket updates directly influence reimbursement
 levels, they play a central role in budgeting, actuarial modeling and
 financial planning throughout the healthcare industry. Organizations
 rely on these indices to anticipate future cost trends, evaluate
 financial risk and align internal expectations with federal payment
-policy.
+policy @cms_hhpps_final_rule_2026.
 
 Within this broader framework, the Home Health market basket is
 particularly important. Under the Home Health Prospective Payment System
 (HH PPS), the market basket determines the annual payment update for
 home health agencies, affecting provider revenue, staffing capacity, and
-operational strategy.
+operational strategy. Although the final Home Health market basket
+update is published annually, CMS also releases quarterly projected
+index levels, creating a long historical times series that is suitable
+for statistical modeling.
 
-The final Home Health market basket is published annually, but projected
-estimates are published quarterly and forms a long historical time
-series, making it suitable for statistical modeling. Time series
-methods, including ARIMA models have been widely applied in healthcare
-expenditure forecasting and have demonstrated strong performance in
-capturing inflationary and utilization trends (reference). Forecasting
-the Home Health market basket can support financial planning, inform
-strategic decision making and help organizations anticipate implications
-for cost of care management.
+Time‑series methods, particularly ARIMA models have been widely applied
+in healthcare economics to forecast medical expenditures, inflation, and
+service demand. Prior studies have demonstrated that ARIMA based
+approaches perform well in modeling healthcare spending and medical
+price behavior, including forecasting national health expenditures
+@dritsakis2019time, providing broad overviews of health forecasting
+methodologies @soyiri2013overview, and predicting medical service demand
+using hybrid ARIMA‑based models @huang2020medical. ARIMA models have
+also been used to forecast macroeconomic indicators in complex systems
+@vafin2020forecasting, reinforcing their suitability for modeling
+structured economic indices such as the CMS market baskets. Foundational
+work on medical price indices further highlights the importance of
+understanding the time‑series properties of healthcare cost measures
+@berndt2000medical.
 
-This project applies time-series methods to model and forecast the CMS
-market basket index which is a variable in computing market basket.
+Forecasting the Home Health market basket can support financial
+planning, inform strategic decision‑making, and help organizations
+anticipate implications for cost‑of‑care management. This project
+applies classical time‑series methods to model and forecast the CMS Home
+Health Market Basket Index.
 
 ## Methods
 
 A **Time Series** is a collection of observations $x_t$ made
-sequentially in time $T_0$, and can be classified into two types:
+sequentially in time $T_0$. A somewhat unique feature of time series and
+their models is that we cannot assume that the observations arise
+independently from a common population. Studying models that incorporate
+dependence is the key concept in time series analysis @cryer_chan_2010.
+
+In general, the goal is to emphasize plotting methods that are
+appropriate and useful for finding patterns that will lead to suitable
+models for our time series data. Finding an appropriate model allows us
+to then forecast future values based on past-behavior.
+
+There are three main steps in the process of finding an appropriate
+model.
+
+1.  Model Specification (Identification)
+2.  Model Fitting
+3.  Model Diagnostics
 
 **Discrete-Time Series:** Observations are recorded at distinct, evenly
 spaced time point. Examples include: annual temperature, quarterly
-economic indicators. $T_0 = {1,2,3,...T}$
+economic indicators.
 
 **Continuous-Time Series:** Collection of observations that are made
 continuously over some time interval. For example: network traffic
-measured in real time. Continuous time-series models require
-differential equations and are not used in ARIMA modeling.
+measured in real time.
 
 The CMS Home Health Market Basket is observed quarterly, meaning the
 data occurs at fixed, evenly spaced intervals. Since the time series
 advances in discrete steps, all models evaluated in this study are
 formulated within a discrete time series stochastic process framework.
 
-The objective of Times Series modeling is to not only provide a model of
-the data but to forecast future values based on past-behavior. The first
-goal in time series modeling is to reduce the analysis needed to a
-simpler case: Eliminate Trend, Periodicity or Seasonality and
-Heteroskedasticity. Thereafter, we can model the remainder or residuals
-as dependent but Identically distributed.
-
 ### Stationarity and Time Series Foundations
+
+To make statistical inferences about the structure of a stochastic
+process on the basis of an observed record of that process, we must
+usually make some simplifying assumptions about the structure. The most
+important assumption is that of stationarity. The basic idea of
+stationarity is that that probability laws that govern behavior of the
+process do not change over time @cryer_chan_2010.
 
 A process $\{Y_t\}$ is strictly stationary if the joint distribution of
 $(Y_{t_1}, \ldots, Y_{t_n})$ is the same as the joint distribution of
@@ -92,22 +117,43 @@ $$
 f(Y_{t_1}, \ldots, Y_{t_n}) = f(Y_{t_1-h}, \ldots, Y_{t_n-h})
 $$
 
-A process $\{Y_t\}$ is **weakly stationary** if:
+A process $\{Y_t\}$ is **weakly stationary** if it satisfies that
+following conditions:
 
-Mean is constant: $E(Y_t) = \mu$
+Mean is constant: $$ E(Y_t) = \mu $$
 
 Variance is constant: $Var(Y_t) = \sigma^2$
 
 Autocovariance depends only on lag: $\gamma_{t,t-k} = \gamma_k$
 
-Correlation:\_\_\_\_\_
+Autocorrelation: $\gamma_{t,t-k} = \rho_k$
 
-Weak Stationarity is sufficient for ARMA models assume that the
-underlying statistical process is stable over time. Non-Stationary
-series must be transformed, typically through the process of
-differencing or seasonal differencing before ARIMA/SARIMA modeling.
+Weak stationarity is sufficient for ARMA and ARIMA models because they
+assume that the underlying statistical process is stable over time.
+However, most data sets are **non-Stationary**: without constant mean
+over time, and must be transformed.
 
-In practice, we always tests stationarity of time series data.
+$$
+X_t = \mu_t + Y_t, \\
+\ where \ E(Y_t) = 0
+$$ $$
+\mu_t \text{ nonconstant } \;\Longrightarrow\; X_t \text{ is non-stationary}
+$$
+
+After removing systematic components of a non-stationary series, the
+remaining series should resemble **white noise**: a sequence of
+independent, identically distributed random variables.
+
+```{r}
+wn <- rnorm(500)  
+plot.ts(wn, main = "White Noise Series")
+
+
+
+```
+
+In practice, stationarity is assessed using visual diagnostics and
+formal statistical tests before fitting time series models.
 
 The **Augmented Dickey-Fuller (ADF)** test is used to assess
 stationarity.
@@ -116,9 +162,9 @@ $$
 H_0: \text{The series is NOT stationary} \quad\text{vs.}\quad H_1: \text{The series is stationary}
 $$
 
-If the p-value is above 0.05, we will fail to reject $H_0$ and we can
-use trend or seasonal estimation/elimination methods, transform the
-times series data set and Fit the non-stationary models.
+If the *p*-value is greater than 0.05, we will fail to reject $H_0$ and
+we can use trend or seasonal estimation/elimination methods, transform
+the times series data set and fit the non-stationary models.
 
 **Trend:** a trend is a long term increase or decrease in the level of a
 time-series. It reflects persistent directional movement over time.
@@ -128,11 +174,6 @@ time. Differencing or de-trending is used to remove trend components.
 A non-stationary trend implies: $E[x_t] \neq E[x_{t-k}]$
 
 Trend differencing removes this component: $\nabla x_t = x_t - x_{t-1}$
-
-```{r}
-data("uspop")
-plot(uspop)
-```
 
 **Periodicity** refers to any recurring pattern in the time series,
 regardless whether the cycle length is fixed or known. It indicates that
@@ -145,123 +186,127 @@ cycle length is known, fixed and repeats at regular intervals.
 $E[x_t] = E[x_{t-s}],\ \mathrm{Var}(x_t) = \mathrm{Var}(x_{t-s})$
 
 All seasonal patterns are periodic, but not all periodic patterns are
-seasonal. Seasonal differencing or SARIMA models are used to remove or
-model seasonal structure.
-
-```{r}
-data("lynx")
-plot(lynx)
-```
+seasonal. Seasonal structure can be removed or modeled using seasonal
+differencing or SARIMA models, which incorporate seasonal autoregressive
+and moving-average components.
 
 **Heteroskedasticity** occurs when the variance of the series changes
 over time. This violates the assumption of constant variance and can
-distort model estimation. Specialized models, for example: GARCH are
-used to eliminated variance.
+distort model estimation.
 
 ```{r}
+par(mfrow =c(2,2))
+data("uspop")
+plot(uspop, ylab = "", yaxt = "n", main = "Trend")
+
+data("lynx")
+plot(lynx, ylab = "", yaxt = "n", main = "Periodicity/Seasonality")
+
 data("JohnsonJohnson")
-plot(JohnsonJohnson)
+plot(JohnsonJohnson, ylab="",  yaxt = "n", main = "Heteroskedasticity")
 
 data("AirPassengers")
-plot(AirPassengers)
+plot(AirPassengers, ylab="",  yaxt = "n", main = "Heteroskedasticity, Seasonality, Trend")
 ```
 
-include snippet about IID noise and White NOISE
+### Models for Stationary and Non-Stationary Time Series
 
-### AR (p), MA (q), ARMA (p,q), ARIMA (p,d,q) SARIMA
+Let $Y_t$ denote the observed times series, and $e_t$ represent an
+unobserved white noise series. A **general linear process**, $Y_t$ is
+one that can represented as a weighted linear combination of present and
+past white noise terms as:
+
+$$
+Y_t = \mu + \sum_{j=0}^{\infty} \psi_j e_{t-j}
+$$
+
+where $\mu$ is a constant mean, $\{\psi_j\}$ is a sequence of
+coefficients, and $\{e_t\}$ is a white-noise innovation process.
 
 **Stationary Models**
 
-A **Moving Average (MA)** process of order (q), written MA(q), models
-the current values of the series using the current error term and a
-finite number of past error terms. The standard form is:
+A **Moving Average (MA)** process of order *(q)*, written MA(*q),*
+models the current values of the series using the current error term and
+a finite number of past error terms. The standard form is:
 
-$Y_t = \mu - \theta_1 e_{t-1} - \theta_2 e_{t-2} - \cdots - \theta_q e_{t-q} + e_t$
+$$Y_t = \mu - \theta_1 e_{t-1} - \cdots - \theta_q e_{t-q} + e_t$$
 
-An **Autoregressive (AR)** process of order (p), written AR(p),
+An **Autoregressive (AR)** process of order *(p)*, written AR*(p)*,
 expresses the current values of the series as a linear combination of
 its past values.
 
-$y_t = \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p} + e_t$
+$$Y_t = \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p} + e_t$$
 
 An **Autoregressive Moving Average (ARMA)** model is appropriate for
 stationary time series. It combines AR terms: dependence on past values
 and MA terms: dependence on past shocks.
 
 $$
-y_t
+Y_t
 = \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p}
-+ \varepsilon_t
-+ \theta_1 \varepsilon_{t-1} + \cdots + \theta_q \varepsilon_{t-q}.
++ e_t
++ \theta_1 e_{t-1} + \cdots + \theta_q e_{t-q}.
 $$
 
 **Non-Stationary Models**
 
 An **Autoregressive Integrated Moving Average (ARIMA)** model is an
-extension of the ARMA model that incorporatez non-seasonal differencing
-to remove trend and achieve stationarity.
+extension of the ARMA model that incorporates non-seasonal differencing
+or detrending to remove trend and achieve stationarity.
 
 $$
-\Phi(B)\,(1 - B)^{d}\, y_t \;=\; \Theta(B)\,\varepsilon_t
+\phi(B)(1-B)^d Y_t = \theta(B)e_t
 $$
 
-where:
-
-p: number of AR terms
-
-d: number of differences
-
-q: number of MA terms
-
-B: backshift operator.
-
-Differencing transforms a non-stationary series into a stationary one,
-allowing ARMA structure to be applied to the differenced data. ARIMA
-models are appropriate when the series shows trend but no seasonal
-pattern.
-
-A **Seasonal Autoregressive Integrated Moving Average (SARIMA)** is an
-extension of ARIMA that incorporates seasonal components.
+**Differencing** or **de-trending** transforms a non-stationary series
+into a stationary one, allowing ARMA structure to be applied to the
+differenced data. ARIMA models are appropriate when the series shows
+trend but no seasonal pattern.
 
 $$
-\Phi(B^{s})\,\phi(B)\,(1 - B)^{d}\,(1 - B^{s})^{D}\, y_t
-\;=\;
-\Theta(B^{s})\,\theta(B)\,\varepsilon_t .
+\nabla^{d} X_t = (1 - B)^{d} X_t
 $$
 
 $$
-\begin{aligned}
-\phi(B) &= \text{nonseasonal AR polynomial}, \\
-\theta(B) &= \text{nonseasonal MA polynomial}, \\
-\Phi(B^{s}) &= \text{seasonal AR polynomial}, \\
-\Theta(B^{s}) &= \text{seasonal MA polynomial}, \\
-(1 - B)^{d} &= \text{nonseasonal differencing operator}, \\
-(1 - B^{s})^{D} &= \text{seasonal differencing operator}
-\end{aligned}
+\nabla X_t = X_t - X_{t-1}
 $$
 
-It is written as:
+$$
+\tilde{Y}_t = X_t - (\hat{\beta}_0 + \hat{\beta}_1 t)
+$$
 
-SARIMA (p,d,q)(P,D,Q)s
+**Seasonal Autoregressive Integrated Moving Average** models extend the
+ARIMA framework to account for seasonal dependence in a time series. A
+SARIMA*(p,d,q)(P,D,Q)s* model includes both nonseasonal components
+*(p,d,q)* and seasonal components *(P,D,Q)* with seasonal period s.
 
-where:
+The model is defined by applying both nonseasonal differencing *(1−B)d*
+and seasonal differencing *(1−Bs)D* to produce a stationary series.
 
-(p,d,q): non-seasonal ARIMA orders
+A time series ${Yt}$ follows a SARIMA*(p,d,q)(P,D,Q)s* model if the
+differenced series is a stationary ARMA *(p,q)* process with additional
+seasonal AR and MA terms.
 
-(P,D,Q) seasonal ARIMA orders
+$$
+\phi(B)\,\Phi(B^s)\,(1-B)^d (1-B^s)^D Y_t
+=
+\theta(B)\,\Theta(B^s)\, e_t
+$$
 
-s: seasonal period
+### Model Specification (Identification)
 
-### Model Specification
-
-There are three main steps in the process of finding the appropriate
-model for a time-series: model identification, model fitting and model
-diagnostics.
+In model specification, the classes of time series models are selected
+that may be appropriate for a given observed series. A model chosen at
+any time is tentative and subject to revision later on in the analysis.
+In choosing a model, we should attempt to adhere to the **principle of
+parsimony**; that is a model should require the smallest number of
+parameters that will adequately represent the time series
+@cryer_chan_2010.
 
 The **Autocorrelation Function (ACF)** measures the correlation between
 $x_t$ and its lagged values $x_t-{_k}$ :
 
-$\rho_k = \mathrm{Corr}(x_t, x_{t-k})$
+\$$\rho_k = \mathrm{Corr}(x_t, x_{t-k})$\$
 
 A sharp cutoff after lag q suggests an MA (q) component. A gradual,
 exponential decay suggests an AR or ARMA structure. Seasonal spikes at
@@ -271,7 +316,7 @@ The **Partial Autocorrelation Function (PACF)** measures the correlation
 between $x_t$ and $x_t-{_k}$ after removing the effects of intermediate
 lags:
 
-$\phi_{kk} = \mathrm{Corr}(x_t, x_{t-k} \mid x_{t-1}, \ldots, x_{t-k+1})$
+$$\phi_{kk} = \mathrm{Corr}(x_t, x_{t-k} \mid x_{t-1}, \ldots, x_{t-k+1})$$
 
 A sharp cutoff after lag p suggests an AR(p) component. A gradual decay
 suggests an MA or ARMA structure. Seasonal PACF spikes at lag s indicate
@@ -296,7 +341,7 @@ ar2.1.s=arima.sim(list(order=c(2,0,0),ar=c(1.5,-0.75)),100)
 arma1.1.s=arima.sim(list(order=c(1,0,1),ar=0.6,ma=-0.3),100)
 
 library(TSA)
-par(mfrow = c(3, 3), mar = c(3, 3, 2, 1))
+par(mfrow = c(2, 3), oma = c(0, 0, 3, 0), mar = c(4, 4, 4, 1))
 acf(ma1.1.s, main = "MA(1)")
 acf(ma2.1.s, main = "MA(2)")
 acf(ar1.1.s, main = "AR(1)")
@@ -330,7 +375,7 @@ AICc equates to a better models, differences greater than 2 indicate
 meaningful improvement and the most adequate model is selected.
 
 In addition to manual identification using ACF, PACF, EACF, this study
-uses **auto.arima()** function from the *forecast* package to support
+uses **auto.arima()** function from the `forecast` package to support
 model selection. The auto.arima() function automatically determines,
 p,d,q and seasonal orders. it uses unit root tests such as ADF and KPSS
 to choose differencing. It searches across candidate ARIMA/SARIMA models
@@ -338,7 +383,7 @@ and selects the models with the lowest AICc. This function provides an
 objective benchmark, confirms or refines manually identified models and
 ensures the final model is optimal under AICc.
 
-### Parameter Estimation
+### Model Fitting (Parameter Estimation)
 
 Once the model orders (p,d,q) have been identified, the next step is to
 estimate the parameters of the autoregressive (AR) , moving average
@@ -391,17 +436,13 @@ apply depending on the model class.
     |  |  |  |
     |------------------------|------------------------|------------------------|
     | **Model Type** | **Estimation Methods** | **Notes** |
-    | AR (p) | Yule-Walker, Burg, CSS, MLE | Yule-Walker/Burg for initial estimates; MLE for refinement |
-    | MA (q) | Innovations, Hannan-Rissanen, CSS, MLE | MA requires numerical methods; Hannan-Rissanen gives good starting values |
-    | ARMA (p,q) | Hannan-Rissanen, CSS, MLE | Hannan-Risannen and MLE are standard |
+    | AR *(p)* | Yule-Walker, Burg, CSS, MLE | Yule-Walker/Burg for initial estimates; MLE for refinement |
+    | MA *(q)* | Innovations, Hannan-Rissanen, CSS, MLE | MA requires numerical methods; Hannan-Rissanen gives good starting values |
+    | ARMA *(p,q)* | Hannan-Rissanen, CSS, MLE | Hannan-Risannen and MLE are standard |
+    | ARIMA *(p,d,q)* | CSS, MLE |  |
+    | SARIMA *(p,d,q)(P,D,Q)s* | CSS, MLE |  |
 
     : *Summary of Parameter Estimation Methods*
-
-**Overfitting and Parameter Redundancy**
-
-**Principle of Model Selection: Keep it Simple**
-
-### Model Estimation
 
 ### Model Diagnostics
 
@@ -490,6 +531,45 @@ supporting the adequacy of the model.
 
 ### Forecasting
 
+Forecasting in AR, MA, ARMA, ARIMA, SARIMA models is based on projecting
+the conditional expectation of future values given all information
+available up to time $T$:
+
+This framework applies uniformly across all stationary and
+non-stationary models discussed. The goal of forecasting is to estimate
+future values of the series $Y_{T+h}$ for $h \ge 1$
+
+while quantifying the uncertainty associated with those estimates.
+
+The terms predicting and forecasting are often used interchangeable,
+however they have distinct meanings in time-series analysis. Prediction
+refers to estimating an unknown value within the observed sample and
+does not require temporal ordering. Forecasting refers specifically to
+estimating values beyond the end of the observed sample, using temporal
+dependence structure of the series.
+
+### Forecasting Accuracy and Mean Square Error
+
+Given observations up to time $t$, the $l$-step ahead forecast of
+$Y_{t+1}$ is denoted $Y_t(l)$. The forecast error is:
+
+$$
+e_t(l) = Y_{t+l} - Y_t(l)
+$$
+
+The Mean Squared Error (MSE) of the forecast is:
+
+$$
+\text{MSE}(e_t(l)) = \mathbb{E}[\,e_t(l)^2\,]
+$$
+
+MSE measures how far, on average, the forecast is expected to deviate
+from the true future value. A small MSE indicates that the forecasting
+method produces estimates close to the actual outcomes, while a large
+MSE indicates poor forecasting performance. Because MSE is based on
+squared error, it penalizes large mistakes more heavily, making it a
+sensitive measure of forecast accuracy.
+
 ## Analysis and Results
 
 ### Data Preparation and Exploration
@@ -505,13 +585,40 @@ library(dplyr)
 library(zoo)
 library(tseries)
 library(TSA)
-
-#install.packages("forecast")
 library(forecast)
-
-setwd("C:/Users/ayesh/OneDrive/Desktop/MS Data Science/IDC6940 Projects in Data Science/IDC6940_ARIMA")
+library(broom)
+library(lmtest)
+library(itsmr)
 
 ```
+
+| Package | Purpose |
+|------------------|------------------------------------------------------|
+| `tidyverse` | Unified collection for data wrangling, transformation, visualization, and piping |
+| `dplyr` | Grammar of data manipulation: filter, select, mutate, summarize, join |
+| `readr` | Fast and friendly import of rectangular data (CSV, TSV, delimited files) |
+| `zoo` | Infrastructure for irregular time series; rolling and interpolation tools |
+| `ggthemes` | Additional themes and color palettes for ggplot2 (clean academic styling) |
+| `ggrepel` | Prevents overlapping text labels in ggplot2 |
+| `knitr` | Dynamic report generation for Quarto/R Markdown (integrates code + output) |
+| `tseries` | Classical time‑series tests (ADF, KPSS), GARCH, and ARIMA utilities |
+| `TSA` | Time‑series analysis tools (periodograms, filtering, ARMA diagnostics) |
+| `forecast` | Comprehensive forecasting framework: ARIMA, ETS, STL, accuracy metrics |
+| `dslabs` | Educational datasets and helper functions for data science |
+
+The raw CMS Market Basket Index dataset was imported and screened to
+remove incomplete observations by excluding rows with missing or blank
+values in the HH Index Levels field. The index variable was then coerced
+to numeric to ensure proper handling in subsequent time‑series
+operations. Column names were standardized by renaming the market basket
+date field to Date and the index measure to Index for clarity and
+consistency. The Date column was converted to a quarterly time index
+using as.yearqtr() to reflect the natural periodicity of the CMS market
+basket updates. The dataset was then sorted chronologically to preserve
+the temporal ordering required for time‑series modeling. Finally, the
+cleaned and ordered Index series was transformed into a quarterly
+time‑series object (ts) with a start date of 2010 Q1, producing a
+structured dataset suitable for ARIMA‑based analysis.
 
 ```{r}
 # Import Data Set
@@ -530,7 +637,6 @@ Data <- Data %>%
   mutate(`HH.Index.Levels` = as.numeric(`HH.Index.Levels`))
 
 # Rename Headers
-
 Data <- Data %>%
   rename(
     Date = `Market.Basket`,
@@ -546,13 +652,29 @@ Data <- Data %>%
   arrange(`Date`)
 
 # Convert to Time Series
-TS_Data <- ts(Data$`Index`,
-              start = c(2010,1),
-              frequency = 4)
+TS_Data <- ts(Data$Index, frequency = 1)
 
 ```
 
 ### Preliminary Analysis
+
+```{r}
+library(dplyr)
+
+Table1 <- Data %>%
+  summarise(
+    N = n(),
+    Mean_Index = mean(Index, na.rm = TRUE),
+    SD_Index = sd(Index, na.rm = TRUE),
+    Min_Index = min(Index, na.rm = TRUE),
+    Max_Index = max(Index, na.rm = TRUE),
+    Start_Date = first(Date),
+    End_Date = last(Date)
+  )
+
+knitr::kable(Table1, caption = "Table 1. Descriptive Statistics for CMS Home Health Market Basket Index (2010–2025)")
+
+```
 
 ```{r, warning=FALSE, echo=TRUE}
 
@@ -560,36 +682,141 @@ data(TS_Data)
 head(TS_Data)
 summary (TS_Data)
 
-plot.ts(TS_Data, main = "CMS Home Health Market Basket Index 2010-2025")
+plot(TS_Data,
+     main = "CMS Home Health Market Basket Index 2010–2025",
+     xlab = "Date",
+     ylab = "Index")
+
 qqnorm(TS_Data)
 qqline(TS_Data, col= "red")
-shapiro.test(TS_Data)
 ```
+
+The time series plot of the data indicates a clear upward trend with no
+apparent seasonal component or change in variance over time. The Q-Q
+plot shows that the CMS Home Health Market Basket data deviates from
+normality. Moreover, the Shapiro-Wilk test is performed to test the
+following hypothesis for normality.
+
+$$
+H_0: \text{The CMS Home Health Market Basket Index follows a Normal Distribution} \\
+vs. \\
+H_1: \text{The CMS Home Health Market Basket Index does NOT follow a Normal Distribution}
+$$
+
+```{r}
+tidy(shapiro.test(TS_Data))
+```
+
+p-value \< 0.05, thus we can reject the null hypothesis. We have
+sufficient evidence to conclude that the CMS Home Health Market Basket
+Data does not follow a normal distribution.
 
 ### Stationarity Test and Model Specification
 
+ADF test is performed to test stationarity:
+
+$$
+H_0: \text{The CMS HH Market Basket Index is NOT stationary} \\ \quad\text{vs.} \\ \quad H_1: \text{The CMS HH Market Basket Index is stationary}
+$$
+
 ```{r}
 adf.test(TS_Data)
+plot(diff(diff(TS_Data)))
+```
+
+Since the p-value \> 0.05, we fail to reject the null hypothesis. This
+indicates that the CMS HH Market Basket Index is non-stationary in its
+current form.
+
+```{r}
+par(mfrow = c(1,2))
+
 acf(as.numeric(TS_Data))
 pacf(as.numeric(TS_Data))
 eacf(as.numeric(TS_Data))
+
 auto.arima(TS_Data)
 ```
 
-Candidate Models
+Candidate Model: ARIMA (1,2,0)
 
 ### Modeling and Results
 
--   Explain your data preprocessing and cleaning steps.
-
--   Present your key findings in a clear and concise manner.
-
--   Use visuals to support your claims.
-
--   **Tell a story about what the data reveals.**
+Parameter Estimation
 
 ```{r}
+fit_ARIMA120 <- arima(
+  TS_Data,
+  order = c(1, 2, 0)
+)
 
+coeftest(fit_ARIMA120)
+
+# Fit ARIMA(1,2,0) using MLE
+fit_ARIMA120_MLE <- arima(TS_Data, order = c(1, 2, 0), method = "ML")
+
+# Fit ARIMA(1,2,0) using CSS
+fit_ARIMA120_CSS <- arima(TS_Data, order = c(1, 2, 0), method = "CSS")
+
+# Build comparison table
+model.comparison.arima <- matrix(0, ncol = 2, nrow = 1)
+colnames(model.comparison.arima) <- c("MLE", "CSS")
+rownames(model.comparison.arima) <- c("phi")
+
+model.comparison.arima[1, ] <- c(
+  fit_ARIMA120_MLE$coef[1], 
+  fit_ARIMA120_CSS$coef[1]        
+)
+
+model.comparison.arima
+
+
+```
+
+Hypothesis test.... significant
+
+Residuals
+
+```{r}
+res <- residuals(fit_ARIMA120)
+test(res)
+shapiro.test(res)
+
+```
+
+All residual diagnostics support the adequacy of the ARIMA(1,2,0) model.
+The Ljung–Box and McLeod–Li tests indicate no remaining autocorrelation
+or conditional heteroskedasticity. Nonparametric tests (turning points,
+difference signs, and rank tests) confirm that the residuals behave as
+iid noise. The Shapiro–Wilk test shows no evidence against normality.
+Together, these results demonstrate that the ARIMA(1,2,0) model provides
+an appropriate fit for the CMS Home Health Market Basket Index.
+
+```{r}
+predict_ARIMA120=predict(fit_ARIMA120,n.ahead=8)
+predict_ARIMA120$pred
+predict_ARIMA120$se
+
+upper_95 <- predict_ARIMA120$pred + 1.96 * predict_ARIMA120$se
+lower_95 <- predict_ARIMA120$pred - 1.96 * predict_ARIMA120$se
+
+plot(TS_Data, xlim = c(1, length(TS_Data) + 8),
+     ylim = range(c(TS_Data, upper_95, lower_95)),
+     main = "ARIMA(1,2,0) Forecast",
+     ylab = "Index", xlab = "Time")
+
+lines((length(TS_Data)+1):(length(TS_Data)+8), predict_ARIMA120$pred, col = "blue", type="b", pch=1)
+
+lines((length(TS_Data)+1):(length(TS_Data)+8), upper_95, col = "red", lty = 2)
+lines((length(TS_Data)+1):(length(TS_Data)+8), lower_95, col = "red", lty = 2)
+
+
+
+
+
+```
+
+```{}
 ```
 
 ### Conclusion
