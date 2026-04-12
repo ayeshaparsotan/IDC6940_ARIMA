@@ -10,7 +10,7 @@ course: Capstone Projects in Data Science
 bibliography: references.bib # file contains bibtex for references
 #always_allow_html: true # this allows to get PDF with HTML features
 self-contained: true
-mainfont: "Arial"
+mainfont: "Times New Roman"
 css: styles.css
 execute: 
   warning: false
@@ -278,7 +278,7 @@ $$
 **Seasonal Autoregressive Integrated Moving Average** models extend the
 ARIMA framework to account for seasonal dependence in a time series. A
 SARIMA*(p,d,q)(P,D,Q)s* model includes both nonseasonal components
-*(p,d,q)* and seasonal components *(P,D,Q)* with seasonal period s.
+*(p,d,q)* and seasonal components *(P,D,Q)* with seasonal period *s*.
 
 The model is defined by applying both nonseasonal differencing *(1−B)d*
 and seasonal differencing *(1−Bs)D* to produce a stationary series.
@@ -306,11 +306,13 @@ parameters that will adequately represent the time series
 The **Autocorrelation Function (ACF)** measures the correlation between
 $x_t$ and its lagged values $x_t-{_k}$ :
 
-\$$\rho_k = \mathrm{Corr}(x_t, x_{t-k})$\$
+$$
+\rho_k = \mathrm{Corr}(x_t, x_{t-k})
+$$
 
-A sharp cutoff after lag q suggests an MA (q) component. A gradual,
+A sharp cutoff after lag q suggests an MA *(q)* component. A gradual,
 exponential decay suggests an AR or ARMA structure. Seasonal spikes at
-multiples of the seasonal period s indicate seasonal MA terms.
+multiples of the seasonal period *s* indicate seasonal MA terms.
 
 The **Partial Autocorrelation Function (PACF)** measures the correlation
 between $x_t$ and $x_t-{_k}$ after removing the effects of intermediate
@@ -318,22 +320,22 @@ lags:
 
 $$\phi_{kk} = \mathrm{Corr}(x_t, x_{t-k} \mid x_{t-1}, \ldots, x_{t-k+1})$$
 
-A sharp cutoff after lag p suggests an AR(p) component. A gradual decay
-suggests an MA or ARMA structure. Seasonal PACF spikes at lag s indicate
-seasonal AR terms. A PACF is especially useful for identifying
+A sharp cutoff after lag *p* suggests an AR*(p)* component. A gradual
+decay suggests an MA or ARMA structure. Seasonal PACF spikes at lag s
+indicate seasonal AR terms. A PACF is especially useful for identifying
 autoregressive behavior.
 
 The **Extended Autocorrelation Function (EACF)** provides a systematic
-way to identify ARMA (p,q) orders when ACF and PACF patterns are
-ambiguous. The EACF constructs a grid where Rows = AR orders p, Columns
-= MA orders q. Each cell is marked as: "o" (model is plausible), "x"
-(model is not plausible). The grid is scanned for the first clean
-triangle of "o", and the top left corner of the triangle gives ARMA(p,q)
-model. The EACF is especially valuable when ACF and PACF do not show
-clear cutoffs and the series has mixed AR and MA behavior.
+way to identify ARMA *(p,q)* orders when ACF and PACF patterns are
+ambiguous. The EACF constructs a grid where Rows = AR orders *p*,
+Columns = MA orders *q*. Each cell is marked as: "o" (model is
+plausible), "x" (model is not plausible). The grid is scanned for the
+first clean triangle of "o", and the top left corner of the triangle
+gives ARMA*(p,q)* model. The EACF is especially valuable when ACF and
+PACF do not show clear cutoffs and the series has mixed AR and MA
+behavior.
 
 ```{r}
-#Simulations
 ma1.1.s=arima.sim(list(order=c(0,0,1),ma=-0.9),100)
 ma2.1.s=arima.sim(list(order=c(0,0,2),ma=c(-1,0.6)),100)
 ar1.1.s=arima.sim(list(order=c(1,0,0),ar=0.9),100)
@@ -377,16 +379,15 @@ meaningful improvement and the most adequate model is selected.
 In addition to manual identification using ACF, PACF, EACF, this study
 uses **auto.arima()** function from the `forecast` package to support
 model selection. The auto.arima() function automatically determines,
-p,d,q and seasonal orders. it uses unit root tests such as ADF and KPSS
-to choose differencing. It searches across candidate ARIMA/SARIMA models
-and selects the models with the lowest AICc. This function provides an
-objective benchmark, confirms or refines manually identified models and
-ensures the final model is optimal under AICc.
+*p,d,q* and seasonal orders. It searches across candidate ARIMA/SARIMA
+models and selects the models with the lowest AICc. This function
+provides an objective benchmark, confirms or refines manually identified
+models and ensures the final model is optimal under AICc.
 
 ### Model Fitting (Parameter Estimation)
 
-Once the model orders (p,d,q) have been identified, the next step is to
-estimate the parameters of the autoregressive (AR) , moving average
+Once the model orders *(p,d,q)* have been identified, the next step is
+to estimate the parameters of the autoregressive (AR) , moving average
 (MA), and combined ARMA models. Parameter estimation determines the
 values of the AR co-effecient $\phi_i$ , the MA co-efficient $\theta_i$
 and the innovation variance $\sigma^2$ . Different estimation methods
@@ -475,7 +476,7 @@ z = \frac{\hat{\beta}}{SE(\hat{\beta})}
 $$
 
 and the corresponding p-value determines whether the coefficient is
-significant. If the p-value is less than 0.05, we reject $H_0$ and the
+significant. If the *p*-value is less than 0.05, we reject $H_0$ and the
 coefficient is significant. Significant testing helps to identify
 parameter redundancy and prevents overfitting by ensuring that only
 meaningful terms are retained.
@@ -486,10 +487,10 @@ $$
 e_t^{*} = \frac{\hat{e}_t}{\hat{\sigma}}
 $$
 
-are examined to assess whether the model errors exhibit: zero mean,
-constant variance, no visible patterns, no remaining seasonality. A well
-fitted model produces residuals that fluctuate randomly around zero with
-no systematic structure.
+residuals are examined to assess whether the model errors exhibit: zero
+mean, constant variance, no visible patterns, no remaining seasonality.
+A well fitted model produces residuals that fluctuate randomly around
+zero with no systematic structure.
 
 **Normality Assessment:**
 
@@ -526,7 +527,7 @@ H_1:\ &\text{Residuals are not white noise}
 \end{aligned}
 $$
 
-A large p-value greater than 0.05 indicates failure to reject $H_0$
+A large *p*-value greater than 0.05 indicates failure to reject $H_0$
 supporting the adequacy of the model.
 
 ### Forecasting
@@ -548,27 +549,64 @@ does not require temporal ordering. Forecasting refers specifically to
 estimating values beyond the end of the observed sample, using temporal
 dependence structure of the series.
 
-### Forecasting Accuracy and Mean Square Error
+**Forecast Accuracy Metrics: RMSE, MAPE, and MSE**
 
-Given observations up to time $t$, the $l$-step ahead forecast of
-$Y_{t+1}$ is denoted $Y_t(l)$. The forecast error is:
+To evaluate the quality of the forecasts, several standard accuracy
+metrics are computed from the forecast errors $e_t(\ell)$:
+
+**Mean Squared Error (MSE)**
+
+MSE measures the average squared deviation between the forecast and the
+true value:
 
 $$
-e_t(l) = Y_{t+l} - Y_t(l)
+\text{MSE} = \frac{1}{n} \sum_{t=1}^{n} e_t(\ell)^2.
 $$
 
-The Mean Squared Error (MSE) of the forecast is:
+It penalizes larger errors more heavily and is widely used in model
+comparison.
+
+**Root Mean Squared Error (RMSE)**
+
+RMSE is the square root of MSE:
 
 $$
-\text{MSE}(e_t(l)) = \mathbb{E}[\,e_t(l)^2\,]
+\text{RMSE} = \sqrt{\text{MSE}}.
 $$
 
-MSE measures how far, on average, the forecast is expected to deviate
-from the true future value. A small MSE indicates that the forecasting
-method produces estimates close to the actual outcomes, while a large
-MSE indicates poor forecasting performance. Because MSE is based on
-squared error, it penalizes large mistakes more heavily, making it a
-sensitive measure of forecast accuracy.
+RMSE is expressed in the same units as the original series, making it
+easier to interpret. Lower RMSE values indicate tighter, more accurate
+forecasts.
+
+**Mean Absolute Percentage Error (MAPE)**
+
+MAPE expresses forecast accuracy as a percentage:
+
+$$
+\text{MAPE} = \frac{100}{n} \sum_{t=1}^{n} \left| \frac{e_t(\ell)}{Y_{t+\ell}} \right|.
+$$
+
+MAPE is scale‑free and intuitive, though it can be unstable when actual
+values are near zero. Together, MSE, RMSE, and MAPE provide a
+comprehensive assessment of forecast performance.
+
+| Metric | Description |
+|----------------------------|--------------------------------------------|
+| MSE | Mean Squared Error: average of squared forecast errors. |
+| RMSE | Root Mean Squared Error: square root of MSE; same units as the data. |
+| MAPE | Mean Absolute Percentage Error: average absolute percent error. |
+
+**Optional Training–Testing Approach**
+
+Although the primary analysis in this study relies on full sample
+estimation of the ARIMA model, an optional evaluation strategy involves
+partitioning the data into a training set and a test set. In this
+approach, the model is estimated using the training portion of the
+series, and its out of sample performance is assessed by forecasting the
+remaining observations. This method provides an additional way to
+evaluate forecast accuracy, but it is not required for the ARIMA
+estimation itself. When used, the same accuracy metrics MSE, RMSE, and
+MAPE are computed on the test set to quantify out of sample performance.
 
 ## Analysis and Results
 
@@ -589,33 +627,33 @@ library(forecast)
 library(broom)
 library(lmtest)
 library(itsmr)
-
 ```
 
-| Package | Purpose |
-|------------------|------------------------------------------------------|
-| `tidyverse` | Unified collection for data wrangling, transformation, visualization, and piping |
-| `dplyr` | Grammar of data manipulation: filter, select, mutate, summarize, join |
-| `readr` | Fast and friendly import of rectangular data (CSV, TSV, delimited files) |
-| `zoo` | Infrastructure for irregular time series; rolling and interpolation tools |
-| `ggthemes` | Additional themes and color palettes for ggplot2 (clean academic styling) |
-| `ggrepel` | Prevents overlapping text labels in ggplot2 |
-| `knitr` | Dynamic report generation for Quarto/R Markdown (integrates code + output) |
-| `tseries` | Classical time‑series tests (ADF, KPSS), GARCH, and ARIMA utilities |
-| `TSA` | Time‑series analysis tools (periodograms, filtering, ARMA diagnostics) |
-| `forecast` | Comprehensive forecasting framework: ARIMA, ETS, STL, accuracy metrics |
-| `dslabs` | Educational datasets and helper functions for data science |
+| Category | Package | Purpose |
+|------------------|------------------|-----------------------------------|
+| *Data Import & Wrangling* | `tidyverse` | Unified ecosystem for data manipulation, cleaning, transformation, and piping. |
+|  | `dplyr` | Grammar of data manipulation: filter, mutate, summarize, join, group operations. |
+|  | `readr` | Fast import of rectangular data (CSV, TSV, delimited files). |
+|  | `zoo` | Infrastructure for irregular time series; rolling operations and index handling. |
+|  | `dslabs` | Provides datasets and helper functions for data science workflows. |
+|  | `broom` | Converts model objects into tidy data frames for analysis and reporting. |
+| *Visualization & Reporting* | `ggthemes` | Additional ggplot2 themes for clean academic and professional styling. |
+|  | `ggrepel` | Prevents overlapping text labels in ggplot2 visualizations. |
+|  | `knitr` | Integrates R code and output into Quarto/R Markdown documents. |
+| *Time-Series Modeling* | `tseries` | Classical time-series tools: ADF test, KPSS, GARCH, ARIMA utilities. |
+|  | `TSA` | Shumway & Stoffer time-series functions: periodograms, filtering, ARMA tools. |
+|  | `forecast` | Forecasting framework: ARIMA, ETS, STL, accuracy metrics, forecast plots. |
+| *Statistical Testing & Diagnostics* | `lmtest` | Diagnostic tests for regression and time-series models (Ljung–Box). |
+|  | `itsmr` | Time-series diagnostics: turning points, rank tests, residual randomness tests. |
 
 The raw CMS Market Basket Index dataset was imported and screened to
 remove incomplete observations by excluding rows with missing or blank
-values in the HH Index Levels field. The index variable was then coerced
+values in the HH Index Levels field. The index variable was then changed
 to numeric to ensure proper handling in subsequent time‑series
 operations. Column names were standardized by renaming the market basket
 date field to Date and the index measure to Index for clarity and
-consistency. The Date column was converted to a quarterly time index
-using as.yearqtr() to reflect the natural periodicity of the CMS market
-basket updates. The dataset was then sorted chronologically to preserve
-the temporal ordering required for time‑series modeling. Finally, the
+consistency. The dataset was then sorted chronologically to preserve the
+temporal ordering required for time‑series modeling. Finally, the
 cleaned and ordered Index series was transformed into a quarterly
 time‑series object (ts) with a start date of 2010 Q1, producing a
 structured dataset suitable for ARIMA‑based analysis.
@@ -664,8 +702,8 @@ library(dplyr)
 Table1 <- Data %>%
   summarise(
     N = n(),
-    Mean_Index = mean(Index, na.rm = TRUE),
-    SD_Index = sd(Index, na.rm = TRUE),
+    Mean_Index = round(mean(Index, na.rm = TRUE),3),
+    SD_Index = round(sd(Index, na.rm = TRUE),3),
     Min_Index = min(Index, na.rm = TRUE),
     Max_Index = max(Index, na.rm = TRUE),
     Start_Date = first(Date),
@@ -673,15 +711,25 @@ Table1 <- Data %>%
   )
 
 knitr::kable(Table1, caption = "Table 1. Descriptive Statistics for CMS Home Health Market Basket Index (2010–2025)")
-
 ```
 
-```{r, warning=FALSE, echo=TRUE}
+Table 1 provides a concise overview of the CMS Home Health Market Basket
+Index from 2010 through 2025. Across the 62 quarterly observations, the
+index exhibits a mean value of approximately 0.936 with a standard
+deviation of 0.117, indicating modest variability over the study period.
+The minimum observed value (0.789) and maximum (1.196) suggest a gradual
+upward movement consistent with long‑term cost inflation in the home
+health sector. The dataset spans from 2010 Q1 to 2025 Q2, ensuring
+adequate temporal coverage for trend identification and subsequent
+time‑series modeling. These summary statistics confirm that the series
+is suitable for ARIMA‑based forecasting.
 
+```{r, warning=FALSE, echo=TRUE, fig.width=12, fig.height=4}
 data(TS_Data)
 head(TS_Data)
 summary (TS_Data)
 
+par(mfrow = c(1, 2))
 plot(TS_Data,
      main = "CMS Home Health Market Basket Index 2010–2025",
      xlab = "Date",
@@ -698,16 +746,14 @@ normality. Moreover, the Shapiro-Wilk test is performed to test the
 following hypothesis for normality.
 
 $$
-H_0: \text{The CMS Home Health Market Basket Index follows a Normal Distribution} \\
-vs. \\
-H_1: \text{The CMS Home Health Market Basket Index does NOT follow a Normal Distribution}
+H_0: \text{The CMS HH Market Basket Index follows a Normal Distribution} \\ \quad\text{vs.} \\ \quad H_1: \text{The CMS HH Market Basket Index does NOT follow a Normal Distribution}
 $$
 
 ```{r}
 tidy(shapiro.test(TS_Data))
 ```
 
-p-value \< 0.05, thus we can reject the null hypothesis. We have
+*p*-value \< 0.05, thus we can reject the null hypothesis. We have
 sufficient evidence to conclude that the CMS Home Health Market Basket
 Data does not follow a normal distribution.
 
@@ -724,7 +770,7 @@ adf.test(TS_Data)
 plot(diff(diff(TS_Data)))
 ```
 
-Since the p-value \> 0.05, we fail to reject the null hypothesis. This
+Since the *p*-value \> 0.05, we fail to reject the null hypothesis. This
 indicates that the CMS HH Market Basket Index is non-stationary in its
 current form.
 
@@ -735,14 +781,26 @@ acf(as.numeric(TS_Data))
 pacf(as.numeric(TS_Data))
 eacf(as.numeric(TS_Data))
 
-auto.arima(TS_Data)
+tidy(auto.arima(TS_Data))
 ```
 
-Candidate Model: ARIMA (1,2,0)
+The ARIMA(1,2,0) model was selected as the most appropriate
+specification based on the combined evidence from the ACF, PACF, and
+EACF diagnostics. The raw series exhibited a clear upward trend, and the
+slow decay in the ACF indicated non‑stationarity, supporting the need
+for differencing. The PACF showed a dominant spike at lag 1 with
+subsequent lags falling within the confidence bounds, consistent with an
+AR(1) structure.The auto.arima() function indicated a differencing of 2
+and estimated co-efficent of -0.5844 using MLE. Together, these
+diagnostics pointed toward a parsimonious ARIMA(1,2,0) model that
+adequately captures the underlying dependence structure of the series.
+
+**Candidate Model**: ARIMA (1,2,0) - First order autoregressive process
+with an integration of second order differencing. $$
+(1 + 0.5844B)(1 - B)^2 Y_t = e_t
+$$
 
 ### Modeling and Results
-
-Parameter Estimation
 
 ```{r}
 fit_ARIMA120 <- arima(
@@ -752,43 +810,61 @@ fit_ARIMA120 <- arima(
 
 coeftest(fit_ARIMA120)
 
-# Fit ARIMA(1,2,0) using MLE
 fit_ARIMA120_MLE <- arima(TS_Data, order = c(1, 2, 0), method = "ML")
 
-# Fit ARIMA(1,2,0) using CSS
+
 fit_ARIMA120_CSS <- arima(TS_Data, order = c(1, 2, 0), method = "CSS")
 
-# Build comparison table
-model.comparison.arima <- matrix(0, ncol = 2, nrow = 1)
-colnames(model.comparison.arima) <- c("MLE", "CSS")
+model.comparison.arima <- matrix(NA, ncol = 4, nrow = 1)
+colnames(model.comparison.arima) <- c("MLE_Est", "MLE_SE", "CSS_Est", "CSS_SE")
 rownames(model.comparison.arima) <- c("phi")
 
 model.comparison.arima[1, ] <- c(
-  fit_ARIMA120_MLE$coef[1], 
-  fit_ARIMA120_CSS$coef[1]        
+  fit_ARIMA120_MLE$coef[1],
+  sqrt(diag(fit_ARIMA120_MLE$var.coef))[1],
+  fit_ARIMA120_CSS$coef[1],
+  sqrt(diag(fit_ARIMA120_CSS$var.coef))[1]
 )
 
-model.comparison.arima
+knitr::kable(
+  model.comparison.arima,
+  digits = 4,
+  caption = "Comparison of AR(1) Estimates and Standard Errors for MLE and CSS ARIMA(1,2,0) Models"
+)
 
 
 ```
 
-Hypothesis test.... significant
-
-Residuals
+The ARIMA(1,2,0) model parameters were estimated using both Maximum
+Likelihood Estimation (MLE) and Conditional Sum of Squares (CSS) to
+assess the stability of the autoregressive parameter. Both estimation
+methods produced nearly identical AR(1) coefficients (–0.5844 for ML and
+–0.5932 for CSS), with MLE standard error being smaller. The
+auto.arima() function returned the ML estimate and The z‑test for the
+AR(1) parameter shows that the coefficient is highly statistically
+significant. This consistency across estimation methods strengthens
+confidence in the ARIMA(1,2,0) specification as an appropriate model for
+the data.
 
 ```{r}
 res <- residuals(fit_ARIMA120)
 test(res)
 shapiro.test(res)
-
 ```
 
+$$
+H_0: \text{The Residuals are normal} \\ \quad\text{vs.} \\ \quad H_1: \text{The residuals are NOT normal}
+$$
+
 All residual diagnostics support the adequacy of the ARIMA(1,2,0) model.
-The Ljung–Box and McLeod–Li tests indicate no remaining autocorrelation
-or conditional heteroskedasticity. Nonparametric tests (turning points,
-difference signs, and rank tests) confirm that the residuals behave as
-iid noise. The Shapiro–Wilk test shows no evidence against normality.
+The Ljung–Box test indicate no remaining autocorrelation. Nonparametric
+tests (turning points, difference signs, and rank tests) confirm that
+the residuals behave as iid noise.
+
+The Shapiro–Wilk test shows no evidence against normality.The *p*-value
+\> 0.5, so we fail to reject the null hypothesis, normality is not a
+concern for the candidate model.
+
 Together, these results demonstrate that the ARIMA(1,2,0) model provides
 an appropriate fit for the CMS Home Health Market Basket Index.
 
@@ -809,20 +885,60 @@ lines((length(TS_Data)+1):(length(TS_Data)+8), predict_ARIMA120$pred, col = "blu
 
 lines((length(TS_Data)+1):(length(TS_Data)+8), upper_95, col = "red", lty = 2)
 lines((length(TS_Data)+1):(length(TS_Data)+8), lower_95, col = "red", lty = 2)
+```
+
+```{r}
+library(forecast)
+library(knitr)
+
+fitted_vals <- fitted(fit_ARIMA120)
+
+accuracy_results <- data.frame(
+  MAE  = mean(abs(residuals(fit_ARIMA120))),
+  RMSE = sqrt(mean(residuals(fit_ARIMA120)^2)),
+  MAPE = mean(abs(residuals(fit_ARIMA120) / TS_Data)) * 100,
+  MSE  = mean(residuals(fit_ARIMA120)^2)
+)
 
 
-
-
+kable(
+  accuracy_results,
+  digits = 4,
+  caption = "In-Sample Forecast Accuracy Metrics for ARIMA(1,2,0) Model"
+)
 
 ```
 
-```{}
-```
+The ARIMA(1,2,0) model demonstrated excellent in-sample forecasting
+performance across all evaluation metrics. The mean absolute error
+(MAE=0.002) and the root mean squared error (RMSE = 0.0024), indicate
+that prediction errors are minimal and consistent. Additonally, the mean
+absolute percentage error (MAPE=0.2078%) suggesting that the forecast
+deviates from actual values by less than 1% on average, reflecting a
+very high level of accuracy. Overall, these results indicate that the
+model captures the underlying patterns in the data effectively.
 
 ### Conclusion
 
--   Summarize your key findings.
-
--   Discuss the implications of your results.
+This study applied a classical time‑series modeling framework to
+evaluate and forecast the CMS Home Health Market Basket Index, a key
+economic indicator used to adjust Medicare reimbursement rates. After
+exploring the structure of the series, the ACF, PACF, and EACF
+diagnostics consistently indicated the presence of a strong
+deterministic trend and supported the need for second‑order
+differencing. Model identification procedures converged on an
+ARIMA(1,2,0) specification, which was subsequently estimated using
+maximum likelihood. The autoregressive parameter was statistically
+significant and stable across estimation methods. Comprehensive residual
+diagnostics including tests for autocorrelation, normality, and
+randomness confirmed that the residuals behaved as white noise,
+indicating that the model adequately captured the underlying dynamics of
+the series. Forecast accuracy metrics (MAE, RMSE, MAPE, MSE) further
+supported the model’s suitability by showing that the in sample errors
+were small and consistent with a well‑fitting ARIMA process. Taken
+together, these results validate the ARIMA(1,2,0) model as an
+appropriate and reliable tool for short‑term forecasting of the Home
+Health Market Basket Index, providing a sound basis for anticipating
+future cost‑inflation adjustments within the home health sector.
 
 ## References
