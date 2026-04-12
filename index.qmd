@@ -560,7 +560,7 @@ MSE measures the average squared deviation between the forecast and the
 true value:
 
 $$
-\text{MSE} = \frac{1}{n} \sum_{t=1}^{n} e_t(\ell)^2.
+\text{MSE} = \frac{1}{n} \sum_{t=1}^{n} e_t(\ell)^2
 $$
 
 It penalizes larger errors more heavily and is widely used in model
@@ -571,7 +571,7 @@ comparison.
 RMSE is the square root of MSE:
 
 $$
-\text{RMSE} = \sqrt{\text{MSE}}.
+\text{RMSE} = \sqrt{\text{MSE}}
 $$
 
 RMSE is expressed in the same units as the original series, making it
@@ -583,7 +583,7 @@ forecasts.
 MAPE expresses forecast accuracy as a percentage:
 
 $$
-\text{MAPE} = \frac{100}{n} \sum_{t=1}^{n} \left| \frac{e_t(\ell)}{Y_{t+\ell}} \right|.
+\text{MAPE} = \frac{100}{n} \sum_{t=1}^{n} \left| \frac{e_t(\ell)}{Y_{t+\ell}} \right|
 $$
 
 MAPE is scale‑free and intuitive, though it can be unstable when actual
