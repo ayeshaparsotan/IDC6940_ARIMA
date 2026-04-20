@@ -1,7 +1,6 @@
 ---
-title: "Present a great story for data science projects"
-subtitle: "This is a Slide Template"
-author: "Students names (Advisor: Dr. Cohen)"
+title: "Forecasting CMS Market Basket Using Discrete Time Series Methods (ARIMA)"
+author: "Ayesha Parsotan (Advisor: Dr. Cohen)"
 date: '`r Sys.Date()`'
 format:
   revealjs
@@ -17,101 +16,259 @@ editor:
     wrap: 72
 ---
 
-::: callout-important
-**Remember:** Your goal is to make your audience understand and care
-about your findings. By crafting a compelling story, you can effectively
-communicate the value of your data science project.
+## Introduction {.smaller}
 
-Carefully read this template since it has instructions and tips to
-writing!
+Objective: Forecasting the Home Health market basket can support
+financial planning, inform strategic decision‑making, and help
+organizations anticipate implications for cost‑of‑care management. This
+project applies classical time‑series methods to model and forecast the
+CMS Home Health Market Basket Index.
 
-More information about `revealjs`:
-<https://quarto.org/docs/reference/formats/presentations/revealjs.html>
-:::
+Time‑series methods, particularly ARIMA models have been widely applied
+in healthcare economics to forecast medical expenditures, inflation, and
+service demand. Prior studies have demonstrated that ARIMA based
+approaches perform well in modeling healthcare spending and medical
+price behavior, including forecasting national health expenditures
+@dritsakis2019time, providing broad overviews of health forecasting
+methodologies @soyiri2013overview, and predicting medical service demand
+using hybrid ARIMA‑based models @huang2020medical.
 
-## Introduction  {.smaller}
+## What is a Time Series? {.smaller}
 
--   Develop a storyline that captures attention and maintains interest.
+A Time Series is a collection of observations $x_t$ made sequentially in
+time $T_0$. Studying models that incorporate dependence is the key
+concept in time series analysis @cryer_chan_2010.
 
--   Your audience is your peers
+In general, the goal is to emphasize plotting methods that are
+appropriate and useful for finding patterns that will lead to suitable
+models for our time series data. Finding an appropriate model allows us
+to then forecast future values based on past-behavior.
 
--   Clearly state the problem or question you're addressing.
+## What is a Time Series? {.smaller}
 
--   Introduce why it is relevant needs.
+Discrete-Time Series & Continuous-Time Series
 
--   Provide an overview of your approach.
+The CMS Home Health Market Basket is observed quarterly, meaning the
+data occurs at fixed, evenly spaced intervals. Since the time series
+advances in discrete steps, all models evaluated in this study are
+formulated within a discrete time series stochastic process framework.
 
-In kernel estimator, weight function is known as kernel function
-[@efr2008]. Cite this paper [@bro2014principal]. The GEE [@wang2014].
-The PCA [@daffertshofer2004pca]\*
+## Finding an Appropriate Model {.smaller}
 
-## Methods
+There are three main steps in the process of finding an appropriate
+model:
 
--   Detail the models or algorithms used.
+Model Specification (Identification)
 
--   Justify your choices based on the problem and data.
+Model Fitting
 
+Model Diagnostics
 
+## Stationarity and Time Series Foundations {.smaller}
 
-## Data Exploration and Visualization
+A process $\{Y_t\}$ is strictly stationary if the joint distribution of
+$(Y_{t_1}, \ldots, Y_{t_n})$ is the same as the joint distribution of
+$(Y_{t_1-h}, \ldots, Y_{t_n-h})$ for all choices of time points
+$t_1,\ldots,t_n$ and all choices of time lag $h$.
 
--   Describe your data sources and collection process.
+$$
+f(Y_{t_1}, \ldots, Y_{t_n}) = f(Y_{t_1-h}, \ldots, Y_{t_n-h})
+$$
 
--   Present initial findings and insights through visualizations.
+## Weak Stationarity {.smaller}
 
--   Highlight unexpected patterns or anomalies.
+A process $\{Y_t\}$ is weakly stationary if it satisfies that following
+conditions:
 
-## Data Exploration and Visualization {.smaller}
+$$ E(Y_t) = \mu $$ $$Var(Y_t) = \sigma^2$$
 
-A study was conducted to determine how...
+$$\gamma_{t,t-k} = \gamma_k$$
 
-```{r, warning=FALSE, echo=F, message=FALSE}
-# loading packages 
-library(tidyverse)
-library(knitr)
-library(ggthemes)
-library(ggrepel)
-library(dslabs)
-```
+Weak stationarity is sufficient for ARMA and ARIMA models because they
+assume that the underlying statistical process is stable over time.
 
-```{r, warning=FALSE, echo=F}
-# Load Data
-#kable(head(murders))
+## Non-Stationarity and White Noise {.smaller}
 
-ggplot1 = murders %>% ggplot(mapping = aes(x=population/10^6, y=total)) 
-
-  ggplot1 + geom_point(aes(col=region), size = 4) +
-  geom_text_repel(aes(label=abb)) +
-  scale_x_log10() +
-  scale_y_log10() +
-  geom_smooth(formula = "y~x", method=lm,se = F)+
-  xlab("Populations in millions (log10 scale)") + 
-  ylab("Total number of murders (log10 scale)") +
-  ggtitle("US Gun Murders in 2010") +
-  scale_color_discrete(name = "Region")+
-      theme_bw()
-  
-
-```
-
-## Modeling and Results
-
--   Explain your data preprocessing and cleaning steps.
-
--   Present your key findings in a clear and concise manner.
-
--   Use visuals to support your claims.
-
--   **Tell a story about what the data reveals.**
+However, most data sets are non-Stationary: without constant mean over
+time, and must be transformed. After removing systematic components of a
+non-stationary series, the remaining series should resemble white noise:
+a sequence of independent, identically distributed random variables.
 
 ```{r}
+wn <- rnorm(500)  
+plot.ts(wn, main = "White Noise Series")
 
 ```
 
-## Conclusion
+## Trend, Seasonality, Periodicity and Heteroskedasticity {.smaller}
 
--   Summarize your key findings.
+```{r}
+par(mfrow =c(2,2))
+data("uspop")
+plot(uspop, ylab = "", yaxt = "n", main = "Trend")
 
--   Discuss the implications of your results.
+data("lynx")
+plot(lynx, ylab = "", yaxt = "n", main = "Periodicity/Seasonality")
+
+data("JohnsonJohnson")
+plot(JohnsonJohnson, ylab="",  yaxt = "n", main = "Heteroskedasticity")
+
+data("AirPassengers")
+plot(AirPassengers, ylab="",  yaxt = "n", main = "Heteroskedasticity, Seasonality, Trend")
+```
+
+## ADF Test {.smaller}
+
+In practice, stationarity is assessed using visual diagnostics and
+formal statistical tests before fitting time series models.
+
+The Augmented Dickey-Fuller (ADF) test is used to assess stationarity.
+
+$$
+H_0: \text{The series is NOT stationary} \quad\text{vs.}\quad H_1: \text{The series is stationary}
+$$
+
+If the p-value is greater than 0.05, we will fail to reject $H_0$ and we
+can use trend or seasonal estimation/elimination methods, transform the
+times series data set and fit the non-stationary models.
+
+## Models for Time-Series Analysis {.smaller}
+
+Let $Y_t$ denote the observed times series, and $e_t$ represent an
+unobserved white noise series. A general linear process, $Y_t$ is one
+that can represented as a weighted linear combination of present and
+past white noise terms as:
+
+$$
+Y_t = \mu + \sum_{j=0}^{\infty} \psi_j e_{t-j}
+$$
+
+where $\mu$ is a constant mean, $\{\psi_j\}$ is a sequence of
+coefficients, and $\{e_t\}$ is a white-noise innovation process.
+
+## Stationary Models {.smaller}
+
+Moving Average (MA) process of order (q), MA(q)
+
+$$Y_t = \mu - \theta_1 e_{t-1} - \cdots - \theta_q e_{t-q} + e_t$$
+
+Autoregressive (AR) process of order (p), AR(p)
+
+$$Y_t = \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p} + e_t$$
+
+Autoregressive Moving Average (ARMA)
+
+$$
+Y_t
+= \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p}
++ e_t
++ \theta_1 e_{t-1} + \cdots + \theta_q e_{t-q}.
+$$
+
+## Non-Stationary Models (ARIMA) {.smaller}
+
+An Autoregressive Integrated Moving Average (ARIMA) model is an
+extension of the ARMA model that incorporates non-seasonal differencing
+or detrending to remove trend and achieve stationarity.
+
+$$
+\phi(B)(1-B)^d Y_t = \theta(B)e_t
+$$
+
+## Differencing {.smaller}
+
+Differencing or de-trending transforms a non-stationary series into a
+stationary one, allowing ARMA structure to be applied to the differenced
+data. ARIMA models are appropriate when the series shows trend but no
+seasonal pattern.
+
+$$
+\nabla^{d} X_t = (1 - B)^{d} X_t
+$$
+
+$$
+\nabla X_t = X_t - X_{t-1}
+$$
+
+$$
+\tilde{Y}_t = X_t - (\hat{\beta}_0 + \hat{\beta}_1 t)
+$$
+
+## Non-Stationary Models (SARIMA) {.smaller}
+
+Seasonal Autoregressive Integrated Moving Average: SARIMA(p,d,q)(P,D,Q)s
+model includes both nonseasonal components (p,d,q) and seasonal
+components (P,D,Q) with seasonal period s. A time series ${Yt}$ follows
+a SARIMA(p,d,q)(P,D,Q)s model if the differenced series is a stationary
+ARMA (p,q) process with additional seasonal AR and MA terms.
+
+$$
+\phi(B)\,\Phi(B^s)\,(1-B)^d (1-B^s)^D Y_t
+=
+\theta(B)\,\Theta(B^s)\, e_t
+$$
+
+## Model Identification {.smaller}
+
+In model specification, the classes of time series models are selected
+that may be appropriate for a given observed series. A model chosen at
+any time is tentative and subject to revision later on in the analysis.
+In choosing a model, we should attempt to adhere to the principle of
+parsimony; that is a model should require the smallest number of
+parameters that will adequately represent the time series
+@cryer_chan_2010.
+
+## ACF, PACF, EACF {.smaller}
+
+```{r}
+ma1.1.s=arima.sim(list(order=c(0,0,1),ma=-0.9),100)
+ma2.1.s=arima.sim(list(order=c(0,0,2),ma=c(-1,0.6)),100)
+ar1.1.s=arima.sim(list(order=c(1,0,0),ar=0.9),100)
+ar2.1.s=arima.sim(list(order=c(2,0,0),ar=c(1.5,-0.75)),100)
+arma1.1.s=arima.sim(list(order=c(1,0,1),ar=0.6,ma=-0.3),100)
+
+library(TSA)
+par(mfrow = c(2, 3), oma = c(0, 0, 3, 0), mar = c(4, 4, 4, 1))
+acf(ma1.1.s, main = "MA(1)")
+acf(ma2.1.s, main = "MA(2)")
+acf(ar1.1.s, main = "AR(1)")
+pacf(ar1.1.s, main = "PACF AR(1)")
+acf(ar2.1.s, main = "AR(2)")
+pacf(ar2.1.s, main = "PACF AR(2)")
+
+
+eacf(arma1.1.s)
+```
+
+## AICc {.smaller}
+
+After candidate models are manually identified, they are compared using
+the Corrected Akaike Information Criterion (AICc):
+
+$$
+AIC_c = AIC + \frac{2k(k+1)}{n - k - 1}
+$$
+
+where:
+
+$$
+AIC = -2\log(L) + 2k
+$$
+
+$L$ is the maximized likelihood,$k$ is the number of estimated
+parameters, and$n$ is the sample size.
+
+AICc adjusts for small sample sized and prevents overfitting. A lower
+AICc equates to a better models, differences greater than 2 indicate
+meaningful improvement and the most adequate model is selected. In
+addition to manual identification using ACF, PACF, EACF, this study uses
+auto.arima() function from the forecast package to support model
+selection.
+
+## Model Fitting (Parameter Estimation) {.smaller}
+
+
+## 
+
 
 ## References

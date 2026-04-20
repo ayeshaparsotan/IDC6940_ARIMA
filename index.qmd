@@ -435,7 +435,7 @@ apply depending on the model class.
     This method is widely used for ARMA models.
 
     |  |  |  |
-    |------------------------|------------------------|------------------------|
+    |----|----|----|
     | **Model Type** | **Estimation Methods** | **Notes** |
     | AR *(p)* | Yule-Walker, Burg, CSS, MLE | Yule-Walker/Burg for initial estimates; MLE for refinement |
     | MA *(q)* | Innovations, Hannan-Rissanen, CSS, MLE | MA requires numerical methods; Hannan-Rissanen gives good starting values |
@@ -591,7 +591,7 @@ values are near zero. Together, MSE, RMSE, and MAPE provide a
 comprehensive assessment of forecast performance.
 
 | Metric | Description |
-|----------------------------|--------------------------------------------|
+|----|----|
 | MSE | Mean Squared Error: average of squared forecast errors. |
 | RMSE | Root Mean Squared Error: square root of MSE; same units as the data. |
 | MAPE | Mean Absolute Percentage Error: average absolute percent error. |
@@ -630,7 +630,7 @@ library(itsmr)
 ```
 
 | Category | Package | Purpose |
-|------------------|------------------|-----------------------------------|
+|----|----|----|
 | *Data Import & Wrangling* | `tidyverse` | Unified ecosystem for data manipulation, cleaning, transformation, and piping. |
 |  | `dplyr` | Grammar of data manipulation: filter, mutate, summarize, join, group operations. |
 |  | `readr` | Fast import of rectangular data (CSV, TSV, delimited files). |
