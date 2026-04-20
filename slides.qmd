@@ -268,7 +268,21 @@ selection.
 ## Model Fitting (Parameter Estimation) {.smaller}
 
 
-## 
+## Model Diagnostics
 
+
+## Forecasting
+
+## Optional Training/Testing Approach
+
+## Loading Packages and Libraries
+
+## Data Preparation
+
+## Premilinary Analysis
+
+## Modeling and Results
+
+## Conclusion
 
 ## References
