@@ -198,19 +198,6 @@ $$
 \tilde{Y}_t = X_t - (\hat{\beta}_0 + \hat{\beta}_1 t)
 $$
 
-## Non-Stationary Models (SARIMA) {.smaller}
-
-Seasonal Autoregressive Integrated Moving Average: **SARIMA(p,d,q)(P,D,Q)s**
-model includes both nonseasonal components (p,d,q) and seasonal
-components (P,D,Q) with seasonal period s. A time series ${Yt}$ follows
-a SARIMA(p,d,q)(P,D,Q)s model if the differenced series is a stationary
-ARMA (p,q) process with additional seasonal AR and MA terms.
-
-$$
-\phi(B)\,\Phi(B^s)\,(1-B)^d (1-B^s)^D Y_t
-=
-\theta(B)\,\Theta(B^s)\, e_t
-$$
 
 ## Model Identification {.smaller}
 
